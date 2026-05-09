@@ -2,21 +2,18 @@
 
 import { useQuery } from '@tanstack/react-query';
 import css from './NotePreview.module.css';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { fetchNoteById } from '@/lib/api';
 import Loader from '@/components/Loader/Loader';
 import ErrorMessage from '@/components/ErrorMessage/ErrorMessage';
+import Modal from '@/components/Modal/Modal';
 
-type Params = {
+type NotePreviewClientProps = {
   id: string;
 };
 
-interface NotePreviewProps {
-  fnBack: () => void;
-}
-
-export default function NotePreview({ fnBack }: NotePreviewProps) {
-  const { id } = useParams<Params>();
+export default function NotePreviewClient({ id }: NotePreviewClientProps) {
+  const router = useRouter();
 
   const { data, isError, isLoading } = useQuery({
     queryKey: ['note', id],
@@ -25,28 +22,30 @@ export default function NotePreview({ fnBack }: NotePreviewProps) {
   });
 
   return (
-    <div className={css.container}>
-      {isLoading && <Loader />}
-      {isError && <ErrorMessage />}
-      {data && !isError && (
-        <div className={css.item}>
-          <div className={css.header}>
-            <h2>{data?.title}</h2>
+    <Modal onClose={() => router.back()}>
+      <div className={css.container}>
+        {isLoading && <Loader />}
+        {isError && <ErrorMessage />}
+        {data && !isError && (
+          <div className={css.item}>
+            <div className={css.header}>
+              <h2>{data?.title}</h2>
+            </div>
+            <p className={css.tag}>{data?.tag}</p>
+            <p className={css.content}>{data?.content}</p>
+            <p className={css.date}>{data?.createdAt}</p>
           </div>
-          <p className={css.tag}>{data?.tag}</p>
-          <p className={css.content}>{data?.content}</p>
-          <p className={css.date}>{data?.createdAt}</p>
-        </div>
-      )}
-      <button
-        className={css.backBtn}
-        onClick={() => {
-          fnBack();
-        }}
-        type="button"
-      >
-        Back
-      </button>
-    </div>
+        )}
+        <button
+          className={css.backBtn}
+          onClick={() => {
+            router.back();
+          }}
+          type="button"
+        >
+          Back
+        </button>
+      </div>
+    </Modal>
   );
 }

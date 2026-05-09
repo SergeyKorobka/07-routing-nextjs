@@ -13,20 +13,16 @@ import NoContent from '@/components/NoContent/NoContent';
 import NoteList from '@/components/NoteList/NoteList';
 import Modal from '@/components/Modal/Modal';
 import NoteForm from '@/components/NoteForm/NoteForm';
-import { useParams } from 'next/navigation';
 import { NoteTag } from '@/types/note';
 
-type Params = {
-  slug: NoteTag;
-};
+interface NotesClientProps {
+  tag: NoteTag | undefined;
+}
 
-export default function NotesClient() {
+export default function NotesClient({ tag }: NotesClientProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [isOpenModal, setIsOpenModal] = useState(false);
-  const { slug } = useParams<Params>();
-
-  const tag = slug[0].toLocaleLowerCase() === 'all' ? undefined : slug[0];
 
   const { data, isSuccess, isError, isLoading } = useQuery({
     queryKey: ['notes', page, search, tag],

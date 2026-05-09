@@ -1,37 +1,26 @@
-'use client';
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from '@tanstack/react-query';
+import NotePreviewClient from './NotePreview.client';
+import { fetchNoteById } from '@/lib/api';
 
-import NotePreview from './NotePreview.client';
-import css from './Modal.module.css';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+interface NotePreviewProps {
+  params: Promise<{ id: string }>;
+}
 
-export default function ModalNotes() {
-  const router = useRouter();
+export default async function NotePreview({ params }: NotePreviewProps) {
+  const { id } = await params;
+  const queryClient = new QueryClient();
 
-  useEffect(() => {
-    function handleClose(e: KeyboardEvent) {
-      if (e.code.toLocaleLowerCase() === 'escape') {
-        router.back();
-      }
-    }
-
-    document.addEventListener('keydown', handleClose);
-
-    return () => {
-      document.removeEventListener('keydown', handleClose);
-    };
-  }, [router]);
-
+  queryClient.prefetchQuery({
+    queryKey: ['note', id],
+    queryFn: () => fetchNoteById(id),
+  });
   return (
-    <div
-      onClick={e => {
-        if (e.currentTarget === e.target) router.back();
-      }}
-      className={css.backdrop}
-    >
-      <div className={css.modal}>
-        <NotePreview fnBack={() => router.back()} />
-      </div>
-    </div>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <NotePreviewClient id={id} />
+    </HydrationBoundary>
   );
 }
