@@ -1,37 +1,52 @@
 'use client';
 
-import NotePreview from '@/components/NotePreview/NotePreview';
-import css from './Modal.module.css';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import css from './NotePreview.module.css';
+import { useParams } from 'next/navigation';
+import { fetchNoteById } from '@/lib/api';
+import Loader from '@/components/Loader/Loader';
+import ErrorMessage from '@/components/ErrorMessage/ErrorMessage';
 
-export default function ModalNotes() {
-  const router = useRouter();
+type Params = {
+  id: string;
+};
 
-  useEffect(() => {
-    function handleClose(e: KeyboardEvent) {
-      if (e.code.toLocaleLowerCase() === 'escape') {
-        router.back();
-      }
-    }
+interface NotePreviewProps {
+  fnBack: () => void;
+}
 
-    document.addEventListener('keydown', handleClose);
+export default function NotePreview({ fnBack }: NotePreviewProps) {
+  const { id } = useParams<Params>();
 
-    return () => {
-      document.removeEventListener('keydown', handleClose);
-    };
-  }, [router]);
+  const { data, isError, isLoading } = useQuery({
+    queryKey: ['note', id],
+    queryFn: () => fetchNoteById(id),
+    refetchOnMount: false,
+  });
 
   return (
-    <div
-      onClick={e => {
-        if (e.currentTarget === e.target) router.back();
-      }}
-      className={css.backdrop}
-    >
-      <div className={css.modal}>
-        <NotePreview fnBack={() => router.back()} />
-      </div>
+    <div className={css.container}>
+      {isLoading && <Loader />}
+      {isError && <ErrorMessage />}
+      {data && !isError && (
+        <div className={css.item}>
+          <div className={css.header}>
+            <h2>{data?.title}</h2>
+          </div>
+          <p className={css.tag}>{data?.tag}</p>
+          <p className={css.content}>{data?.content}</p>
+          <p className={css.date}>{data?.createdAt}</p>
+        </div>
+      )}
+      <button
+        className={css.backBtn}
+        onClick={() => {
+          fnBack();
+        }}
+        type="button"
+      >
+        Back
+      </button>
     </div>
   );
 }
