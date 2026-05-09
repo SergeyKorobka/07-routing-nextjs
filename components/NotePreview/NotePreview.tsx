@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import css from './NotePreview.module.css';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { fetchNoteById } from '@/lib/api';
 import Loader from '@/components/Loader/Loader';
 import ErrorMessage from '@/components/ErrorMessage/ErrorMessage';
@@ -11,9 +11,12 @@ type Params = {
   id: string;
 };
 
-export default function NotePreview() {
+interface NotePreviewProps {
+  fnBack: () => void;
+}
+
+export default function NotePreview({ fnBack }: NotePreviewProps) {
   const { id } = useParams<Params>();
-  const router = useRouter();
 
   const { data, isError, isLoading } = useQuery({
     queryKey: ['note', id],
@@ -38,7 +41,7 @@ export default function NotePreview() {
       <button
         className={css.backBtn}
         onClick={() => {
-          router.back();
+          fnBack();
         }}
         type="button"
       >

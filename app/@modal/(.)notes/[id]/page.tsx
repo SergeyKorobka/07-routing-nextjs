@@ -24,13 +24,13 @@ export default function ModalNotes() {
 
   return (
     <div
-      onClick={() => {
-        router.back();
+      onClick={e => {
+        if (e.currentTarget === e.target) router.back();
       }}
       className={css.backdrop}
     >
       <div className={css.modal}>
-        <NotePreview />
+        <NotePreview fnBack={() => router.back()} />
       </div>
     </div>
   );
